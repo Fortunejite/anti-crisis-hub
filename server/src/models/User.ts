@@ -26,4 +26,5 @@ userSchema.pre('save', async function (next) {
 
 userSchema.index({ location: "2dsphere" }); // Enable geospatial queries
 
-module.exports = mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model('User', userSchema)
+export default User;
