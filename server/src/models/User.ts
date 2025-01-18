@@ -5,11 +5,17 @@ export interface IUser extends mongoose.Document {
   name: string;
   email: string;
   password: string;
+  phone: string;
+  profileImage?: string;
   role: 'user' | 'admin';
+  location: {
+    type: 'Point',
+    coordinates: number[]
+  }
   comparePassword: (password: string) => Promise<boolean>;
 }
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema<IUser>({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
@@ -38,5 +44,5 @@ userSchema.methods.comparePassword = async function (password: string): Promise<
 
 userSchema.index({ location: "2dsphere" }); // Enable geospatial queries
 
-const User = mongoose.models.User || mongoose.model('User', userSchema)
+const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema)
 export default User;

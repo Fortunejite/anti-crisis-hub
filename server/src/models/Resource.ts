@@ -1,6 +1,20 @@
 import mongoose from "mongoose";
 
-const resourceSchema = new mongoose.Schema({
+export interface IResources extends mongoose.Document {
+  provider: string | mongoose.Schema.Types.ObjectId;
+  type: string;
+  description: string;
+  location: {
+    type: 'Point',
+    coordinates: number[]
+  };
+  quantity: number,
+  availability: boolean,
+  images: string[],
+  expirationDate?: Date,
+}
+
+const resourceSchema = new mongoose.Schema<IResources>({
   provider: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   type: { type: String, required: true }, // e.g., food, shelter, medical aid
   description: { type: String, required: true }, // e.g., "5 bags of rice"
@@ -16,5 +30,5 @@ const resourceSchema = new mongoose.Schema({
 
 resourceSchema.index({ location: "2dsphere" });
 
-const Resource = mongoose.models.Resource || mongoose.model("Resource", resourceSchema);
+const Resource = mongoose.models.Resource || mongoose.model<IResources>("Resource", resourceSchema);
 export default Resource;
