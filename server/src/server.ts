@@ -1,6 +1,6 @@
 import app from "./app";
 import dotenv from 'dotenv'
-import dbConnect from "./configs/db";
+import dbConnect from "./config/db";
 
 dotenv.config()
 

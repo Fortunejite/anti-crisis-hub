@@ -1,6 +1,14 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
+export interface IUser extends mongoose.Document {
+  name: string;
+  email: string;
+  password: string;
+  role: 'user' | 'admin';
+  comparePassword: (password: string) => Promise<boolean>;
+}
+
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -23,6 +31,10 @@ userSchema.pre('save', async function (next) {
     this.password = await bcrypt.hash(this.password, 10);
     next();
 });
+
+userSchema.methods.comparePassword = async function (password: string): Promise<boolean> {
+  return bcrypt.compare(password, this.password);
+};
 
 userSchema.index({ location: "2dsphere" }); // Enable geospatial queries
 
