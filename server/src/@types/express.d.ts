@@ -7,7 +7,7 @@ declare global {
                 id: string;
                 email: string;
                 role: string;
-                profileImage: string;
+                profileImage?: string;
             };
         }
     }

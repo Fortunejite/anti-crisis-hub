@@ -2,6 +2,7 @@ import User from '@/models/User';
 import { NextFunction, Request, Response } from 'express';
 import { object, string, enum as enum_, array, boolean, number } from 'zod';
 import { generateToken } from '@/utils/jwt';
+import CustomError from '@/@types/customError';
 
 const RegisterRequestBodySchema = object({
   email: string().email({ message: 'Invalid email address' }),
@@ -35,7 +36,8 @@ export const register = async (
       RegisterRequestBodySchema.parse(req.body);
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      res.status(400).json({ message: 'User already exists' });
+      const error = new CustomError('User already exists', 400);
+      next(error);
       return
     }
     const user = await User.create({
@@ -79,9 +81,9 @@ export const login = async (
       return;
     }
 
-    const token = generateToken({ id: user._id, email: user.email, role: user.role, profileImage: user.profileImage }, rememberMe);
+    const token = generateToken({ id: user._id as string, email: user.email, role: user.role, profileImage: user.profileImage }, rememberMe);
 
-    const { password: userPassword, ...userInfo } = user._doc;
+    const { password: userPassword, ...userInfo } = user.toObject();
     res.status(200).json({ token, userInfo });
   } catch (error) {
     next(error);

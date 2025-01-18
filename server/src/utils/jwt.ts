@@ -6,7 +6,7 @@ interface JwtPayload {
   id: string;
   email: string;
   role: string;
-  profileImage: string;
+  profileImage?: string;
 }
 
 export const generateToken = (payload: JwtPayload, rememberMe: boolean): string => {
