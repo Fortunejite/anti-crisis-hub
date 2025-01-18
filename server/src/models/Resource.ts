@@ -30,5 +30,5 @@ const resourceSchema = new mongoose.Schema<IResources>({
 
 resourceSchema.index({ location: "2dsphere" });
 
-const Resource = mongoose.models.Resource || mongoose.model<IResources>("Resource", resourceSchema);
+const Resource: mongoose.Model<IResources> = mongoose.models.Resource || mongoose.model<IResources>("Resource", resourceSchema);
 export default Resource;

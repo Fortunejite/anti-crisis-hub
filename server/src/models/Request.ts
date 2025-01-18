@@ -1,13 +1,14 @@
 import mongoose from "mongoose";
 
-const requestSchema = new mongoose.Schema({
+export interface IRequest extends mongoose.Document {
+  seeker: string | mongoose.Schema.Types.ObjectId;
+  resource: string | mongoose.Schema.Types.ObjectId;
+  status: 'Pending' | 'Fulfilled'
+}
+
+const requestSchema = new mongoose.Schema<IRequest>({
   seeker: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  type: { type: String, required: true }, // e.g., food, shelter
-  description: { type: String, required: true },
-  location: {
-    type: { type: String, enum: ["Point"], required: true },
-    coordinates: { type: [Number], required: true }
-  },
+  resource: { type: mongoose.Schema.Types.ObjectId, ref: "Resource", required: true },
   status: { 
     type: String, 
     enum: ["Pending", "Fulfilled"], 
@@ -15,7 +16,5 @@ const requestSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-requestSchema.index({ location: "2dsphere" });
-
-const Request = mongoose.models.Request || mongoose.model("Request", requestSchema);
+const Request: mongoose.Model<IRequest> = mongoose.models.Request || mongoose.model<IRequest>("Request", requestSchema);
 export default Request;

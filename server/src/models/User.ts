@@ -44,5 +44,5 @@ userSchema.methods.comparePassword = async function (password: string): Promise<
 
 userSchema.index({ location: "2dsphere" }); // Enable geospatial queries
 
-const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema)
+const User: mongoose.Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', userSchema)
 export default User;

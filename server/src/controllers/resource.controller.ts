@@ -4,7 +4,7 @@ import { NextFunction, Request, Response } from 'express';
 import { array, date, number, object, string } from 'zod';
 
 const ResourceRequestBodySchema = object({
-  type: string({ message: 'Resource type is reqired' }),
+  type: string({ message: 'Resource type is required' }),
   description: string().min(3, {
     message: 'Description must be at least 3 characters',
   }),
@@ -25,14 +25,12 @@ export const fetchResources = async (
   const limit = Number(query['limit']) || 10;
 
   // filters
-  const long = Number(query['long']);
+  const lng = Number(query['lng']);
   const lat = Number(query['lat']);
   const type = query['type'];
 
   const radiusInMeters = Number(query['radiusInMeters']);
-  console.log(radiusInMeters);
-
-  if (!long || !lat) {
+  if (!lng || !lat) {
     const error = new CustomError("Person's location is required", 400);
     error.statusCode = 400;
     next(error);
@@ -47,7 +45,7 @@ export const fetchResources = async (
         $geoNear: {
           near: {
             type: 'Point',
-            coordinates: [long, lat], // Person's location
+            coordinates: [lng, lat], // Person's location
           },
           distanceField: 'distance', // Field to store computed distance
           spherical: true, // Use spherical distance calculation
@@ -58,8 +56,34 @@ export const fetchResources = async (
     ])
       .skip(skip)
       .limit(limit);
+    // .populate('provider');
 
     res.json(availableResources);
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const fetchProviderResources = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { query, params } = req;
+  // paginations
+  const page = Number(query['page']) || 1;
+  const limit = Number(query['limit']) || 10;
+
+  // filters
+  const type = query['type'];
+  const provider = params['provider'];
+
+  const skip = (page - 1) * limit;
+
+  try {
+    const resources = await Resource.find({ provider }).skip(skip).limit(limit);
+
+    res.json(resources);
   } catch (e) {
     next(e);
   }
@@ -73,7 +97,7 @@ export const createResource = async (
   try {
     const { body, user } = req;
     const resourceBody = ResourceRequestBodySchema.parse(body);
-    const location = {
+    const location: { type: 'Point'; coordinates: number[] } = {
       type: 'Point',
       coordinates: resourceBody.location,
     };
