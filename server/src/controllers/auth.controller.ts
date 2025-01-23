@@ -89,3 +89,7 @@ export const login = async (
     next(error);
   }
 };
+
+export const getProfile = (req: Request, res: Response): void => {
+  res.json(req.user);
+};

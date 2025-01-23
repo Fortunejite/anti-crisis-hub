@@ -16,7 +16,7 @@ if (container) {
     <React.StrictMode>
       <Provider store={store}>
         <AuthProvider>
-          <ThemeProvider theme={theme} defaultMode='light'>
+          <ThemeProvider theme={theme} defaultMode='system'>
             <BrowserRouter>
               <CssBaseline />
               <App />

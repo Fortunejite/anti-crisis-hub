@@ -39,15 +39,21 @@ export const login = createAsyncThunk(
   },
 );
 
-export const logout = createAsyncThunk(
-  'auth/logout',
-  async (_, { rejectWithValue }) => {
+export const updateUserProfile = createAsyncThunk(
+  '/auth/updateProfile',
+  async (profileData, { dispatch, rejectWithValue }) => {
     try {
-      await backendAPI.post('/auth/logout');
-      return true;
-    } catch (error) {
-      const errorMessage = errorHandler(error);
-      return rejectWithValue(errorMessage);
+      const token = localStorage.getItem('token');
+      const res = await backendAPI.put('/auth/profile', profileData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      dispatch(setUser(res.data));
+      localStorage.setItem('user', JSON.stringify(res.data));
+      return res.data;
+    } catch (e) {
+      rejectWithValue(errorHandler(e));
     }
   },
 );
@@ -70,6 +76,12 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    logout: (state) => {
+      state.user = null;
+      state.isLoggedIn = false;
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    },
   },
   extraReducers: (builder) => {
     // Handle login
@@ -87,24 +99,8 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       });
-
-    // Handle logout
-    builder
-      .addCase(logout.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(logout.fulfilled, (state) => {
-        state.loading = false;
-        state.user = null;
-        state.isLoggedIn = false;
-      })
-      .addCase(logout.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
   },
 });
 
-export const { setUser, clearError } = authSlice.actions;
+export const { setUser, clearError, logout } = authSlice.actions;
 export default authSlice.reducer;

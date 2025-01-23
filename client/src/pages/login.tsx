@@ -1,5 +1,5 @@
 import React, { FormEvent, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Stack,
   TextField,
@@ -17,6 +17,7 @@ import { login } from '@/redux/authSlice';
 const Login = () => {
   const { loading } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -34,6 +35,7 @@ const Login = () => {
       console.log(result.payload);
       return;
     }
+    navigate('/')
   };
 
   return (

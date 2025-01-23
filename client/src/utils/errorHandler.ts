@@ -1,10 +1,15 @@
+// import { logout } from '@/redux/authSlice';
+// import store from '@/redux/store';
 import { AxiosError } from 'axios';
 
 export default function errorHandler(error: unknown): string {
   // Check if the error is an AxiosError
   if (error instanceof AxiosError) {
+    // if (error.response?.status === 401) {
+    //   store.dispatch(logout());
+    // }
     const message = error.response?.data?.message || 'An error occurred';
-    console.error("Error:", message);
+    console.error('Error:', message);
     return message;
   }
 
