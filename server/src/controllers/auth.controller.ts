@@ -5,7 +5,7 @@ import { generateToken } from '@/utils/jwt';
 import CustomError from '@/@types/customError';
 
 const RegisterRequestBodySchema = object({
-  email: string().email({ message: 'Invalid email address' }),
+  email: string().email({ message: 'Invalid Email address' }),
   name: string()
     .min(3, { message: 'Name must be at least 3 characters' })
     .max(40, { message: 'Name must not exceed 40 characters' }),
@@ -70,14 +70,14 @@ export const login = async (
     );
     const user = await User.findOne({ email });
     if (!user) {
-      res.status(401).json({ message: 'Email does not exist' });
+      res.status(400).json({ message: 'Email does not exist' });
       return;
     }
 
     // Compare passwords
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      res.status(401).json({ message: 'Password incorrect' });
+      res.status(400).json({ message: 'Password incorrect' });
       return;
     }
 
