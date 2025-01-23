@@ -1,4 +1,4 @@
-import errorHandler from '@/utils/errorHandler';
+import errorHandler from '../utils/errorHandler';
 import axios from 'axios';
 import React, { createContext, useState, ReactNode, useContext } from 'react';
 
@@ -14,9 +14,9 @@ interface User {
 }
 
 interface IAuthContext {
-    user: User | null;
-    login: (email: string, password: string) => void;
-    logout: () => void;
+  user: User | null;
+  login: (email: string, password: string, rememberMe: boolean) => Promise<string>; // Updated type for login
+  logout: () => void;
 }
 
 const AuthContext = createContext<IAuthContext | null>(null);
@@ -25,18 +25,16 @@ const baseUrl = process.env.REACT_APP_SERVER_URL;
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, rememberMe: boolean) => {
     try {
-      const response = await axios.post(
-        `${baseUrl}/login`,
-        { email, password },
-      );
+      const response = await axios.post(`${baseUrl}/auth/login`, { email, password, rememberMe });
       const data = response.data;
       data.userInfo.id = data.userInfo._id;
       localStorage.setItem('token', data.token);
       setUser(data.userInfo);
+      return "Login successful";
     } catch (e) {
-      errorHandler(e as Error);
+      return errorHandler(e as Error);
     }
   };
 
@@ -52,6 +50,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 export default AuthContext;

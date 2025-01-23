@@ -23,7 +23,7 @@ const LoginRequestBodySchema = object({
   password: string()
     .min(6, { message: 'Password must be at least 6 characters' })
     .max(30, { message: 'Password must not exceed 30 characters' }),
-  rememberMe: boolean(),
+  rememberMe: boolean().optional().default(false),
 });
 
 export const register = async (
@@ -70,14 +70,14 @@ export const login = async (
     );
     const user = await User.findOne({ email });
     if (!user) {
-      res.status(401).json({ message: 'Invalid email' });
+      res.status(401).json({ message: 'Email does not exist' });
       return;
     }
 
     // Compare passwords
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      res.status(401).json({ message: 'Invalid password' });
+      res.status(401).json({ message: 'Password incorrect' });
       return;
     }
 

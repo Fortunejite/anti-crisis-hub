@@ -6,15 +6,20 @@ import requestRoutes from "@/routes/request.routes"
 import errorHandler from "./middlewares/errorHandler";
 import { auth } from "./middlewares/authorization";
 import { Request, Response, NextFunction } from "express";
+import cors from 'cors';
 
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors({
+  origin: 'http://localhost:3000', // Replace with your frontend URL in production
+  credentials: true, // If you are using cookies or Authorization headers
+}));
 
 app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1", auth, routes);
+app.use("/api/v1", routes);
 app.use("/api/v1/resources", auth, resourceRoutes);
 app.use("/api/v1/requests", auth, requestRoutes);
 

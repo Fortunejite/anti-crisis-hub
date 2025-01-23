@@ -7,7 +7,7 @@ export interface IUser extends mongoose.Document {
   password: string;
   phone: string;
   profileImage?: string;
-  role: 'user' | 'admin';
+  role: 'Seeker' | 'Provider' | 'Admin';
   location: {
     type: 'Point',
     coordinates: number[]
