@@ -39,6 +39,27 @@ export const login = createAsyncThunk(
   },
 );
 
+export const revalidateUser = createAsyncThunk(
+  'auth/revalidateUser',
+  async (_, { rejectWithValue, dispatch }) => {
+    const token = localStorage.getItem('token');
+
+    if (token) {
+      try {
+        const res = await backendAPI.get('/auth/profile');
+        return res.data;
+      } catch (e) {
+        console.error('Revailidation failed:', e);
+        dispatch(logout());
+        return rejectWithValue('Error revalidating user');
+      }
+    } else {
+      dispatch(logout());
+      return rejectWithValue('Token not found');
+    }
+  },
+);
+
 export const updateUserProfile = createAsyncThunk(
   '/auth/updateProfile',
   async (profileData, { dispatch, rejectWithValue }) => {
@@ -50,7 +71,6 @@ export const updateUserProfile = createAsyncThunk(
         },
       });
       dispatch(setUser(res.data));
-      localStorage.setItem('user', JSON.stringify(res.data));
       return res.data;
     } catch (e) {
       rejectWithValue(errorHandler(e));
@@ -92,10 +112,27 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        state.user = action.payload.userInfo;
         state.isLoggedIn = true;
+        localStorage.setItem('token', action.payload.token);
       })
       .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+      
+    // Handle revalidateUser
+    builder
+    .addCase(revalidateUser.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(revalidateUser.fulfilled, (state, action) => {
+      state.loading = false;
+      state.user = action.payload;
+      state.isLoggedIn = true;
+      })
+      .addCase(revalidateUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

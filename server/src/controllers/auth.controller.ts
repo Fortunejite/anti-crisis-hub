@@ -17,6 +17,21 @@ const RegisterRequestBodySchema = object({
   profileImage: string().optional(),
   location: array(number()).length(2, 'Enter a valid location'),
 });
+const UpdateRequestBodySchema = object({
+  email: string().email({ message: 'Invalid Email address' }).optional(),
+  name: string()
+    .min(3, { message: 'Name must be at least 3 characters' })
+    .max(40, { message: 'Name must not exceed 40 characters' })
+    .optional(),
+  password: string()
+    .min(6, { message: 'Password must be at least 6 characters' })
+    .max(30, { message: 'Password must not exceed 30 characters' })
+    .optional(),
+  role: enum_(['Seeker', 'Provider', 'Admin']).optional(),
+  phone: string().min(1, { message: 'Phone number is required' }).optional(),
+  profileImage: string().optional().optional(),
+  location: array(number()).length(2, 'Enter a valid location').optional(),
+});
 
 const LoginRequestBodySchema = object({
   email: string().email({ message: 'Invalid email address' }),
@@ -38,7 +53,7 @@ export const register = async (
     if (existingUser) {
       const error = new CustomError('User already exists', 400);
       next(error);
-      return
+      return;
     }
     const user = await User.create({
       name,
@@ -81,7 +96,15 @@ export const login = async (
       return;
     }
 
-    const token = generateToken({ id: user._id as string, email: user.email, role: user.role, profileImage: user.profileImage }, rememberMe);
+    const token = generateToken(
+      {
+        id: user._id as string,
+        email: user.email,
+        role: user.role,
+        profileImage: user.profileImage,
+      },
+      rememberMe,
+    );
 
     const { password: userPassword, ...userInfo } = user.toObject();
     res.status(200).json({ token, userInfo });
@@ -90,6 +113,36 @@ export const login = async (
   }
 };
 
-export const getProfile = (req: Request, res: Response): void => {
-  res.json(req.user);
+export const getProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { email } = req.user!;
+    const user = await User.findOne({ email });
+    const { password: userPassword, ...userInfo } = user!.toObject();
+    res.status(200).json(userInfo);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { email } = req.user!;
+    const data = RegisterRequestBodySchema.parse(req.body);
+    if (data.password) {
+      res.status(400).json({ message: 'Password cannot be updated here' });
+      return;
+    }
+    await User.updateOne({ email }, data);
+    res.status(200).json(data);
+  } catch (error) {
+    next(error);
+  }
 };
