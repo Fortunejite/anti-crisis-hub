@@ -140,6 +140,12 @@ export const updateProfile = async (
       res.status(400).json({ message: 'Password cannot be updated here' });
       return;
     }
+    if (data.location) {
+      data.location = {
+        type: 'Point',
+        coordinates: location,
+      }
+    }
     await User.updateOne({ email }, data);
     res.status(200).json(data);
   } catch (error) {
